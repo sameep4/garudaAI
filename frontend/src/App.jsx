@@ -12,6 +12,7 @@ import MisinformationAnalyzer from './components/MisinformationAnalyzer';
 import { generateThreat, simulateAttack } from './utils/simulation';
 
 export default function App() {
+   
   const [threats, setThreats] = useState([]);
   const [isAttack, setIsAttack] = useState(false);
   const [isScanning, setIsScanning] = useState(false);

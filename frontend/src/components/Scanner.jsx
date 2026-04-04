@@ -52,26 +52,35 @@ export default function Scanner({ onScanStart, onScanComplete, isAttack }) {
     requestAnimationFrame(step);
   }, [result]);
 
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-    if (!input.trim() || isScanning) return;
+ const handleSubmit = useCallback(async (e) => {
+  e.preventDefault();
+  if (!input.trim() || isScanning) return;
 
-    // Trigger glitch
-    setGlitchActive(true);
-    setTimeout(() => setGlitchActive(false), 300);
+  onScanStart();
 
-    setIsScanning(true);
-    setResult(null);
-    onScanStart?.();
+  try {
+    const response = await fetch("http://127.0.0.1:8000/scan", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ input_text: input }),
+    });
 
-    // Simulate scanning delay
-    setTimeout(() => {
-      const scanResult = calculateRiskScore(input);
-      setResult(scanResult);
-      setIsScanning(false);
-      onScanComplete?.(scanResult);
-    }, 2200);
-  }, [input, isScanning, onScanStart, onScanComplete]);
+    const data = await response.json();
+    alert("Risk Level: " + data.risk);
+
+  } catch (error) {
+    console.error(error);
+    alert("Backend error");
+  }
+
+  onScanComplete();
+
+}, [input, isScanning, onScanStart, onScanComplete]);
+
+  
+
 
   const riskColor = result ? getRiskColor(result.level) : '#00d4ff';
 
