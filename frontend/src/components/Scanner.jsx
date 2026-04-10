@@ -56,31 +56,56 @@ export default function Scanner({ onScanStart, onScanComplete, isAttack }) {
   e.preventDefault();
   if (!input.trim() || isScanning) return;
 
+  setIsScanning(true);
   onScanStart();
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/scan", {
+    const response = await fetch("http://localhost:5000/scan", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ input_text: input }),
+      body: JSON.stringify({ url: input }), // ✅ FIXED
     });
 
     const data = await response.json();
-    alert("Risk Level: " + data.risk);
+
+    console.log("🔍 Scan Result:", data);
+
+    // 🔥 CONVERT BACKEND DATA → YOUR UI FORMAT
+    const mappedResult = {
+      score:
+        data.risk === "High" ? 85 :
+        data.risk === "Medium" ? 55 : 25,
+
+      level: data.risk,
+
+      explanation: `
+Target: ${data.url}
+IP Address: ${data.ip}
+Location: ${data.country}
+
+Threat Type: ${data.threatType}
+Action Taken: ${data.action}
+
+Reason: ${data.reason}
+Confidence: ${data.confidence}
+      `
+    };
+
+    setResult(mappedResult); // ✅ THIS SHOWS UI
 
   } catch (error) {
     console.error(error);
     alert("Backend error");
   }
 
+  setIsScanning(false);
   onScanComplete();
 
 }, [input, isScanning, onScanStart, onScanComplete]);
-
   
-
+ 
 
   const riskColor = result ? getRiskColor(result.level) : '#00d4ff';
 
